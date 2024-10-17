@@ -52,22 +52,32 @@ void setup()
 int potPinX = 36;
 int potPinY = 39;
 
+uint8_t data1, data2;
+uint8_t data1Old = 90, data2Old = 90;
+
 int ADC_Max = 4096;
 
 void loop()
 {
-    // Simulate sending 8-bit unsigned integer data on both channels
     digitalWrite(2, HIGH);
-    uint8_t data1 = map(analogRead(potPinX), 0, ADC_Max, 0, 180);
-    uint8_t data2 = map(analogRead(potPinY), 0, ADC_Max, 0, 180);
+    data1 = map(analogRead(potPinX), 0, ADC_Max, 0, 180);
+    data2 = map(analogRead(potPinY), 0, ADC_Max, 0, 180);
 
-    pCharacteristic1->setValue(&data1, 1);
-    pCharacteristic1->notify();
+    if (data1 != data1Old)
+    {
+        pCharacteristic1->setValue(&data1, 1);
+        pCharacteristic1->notify();
+        data1Old = data1;
+    }
 
-    pCharacteristic2->setValue(&data2, 1);
-    pCharacteristic2->notify();
+    if (data2 != data2Old)
+    {
+        pCharacteristic2->setValue(&data2, 1);
+        pCharacteristic2->notify();
+        data2Old = data2;
+    }
 
-    // Serial.printf("Data sent - Channel 1: %d, Channel 2: %d\n", data1, data2);
+    delay(100);
     digitalWrite(2, LOW);
-    delay(500); // Adjust the delay as needed
+    delay(400);
 }
