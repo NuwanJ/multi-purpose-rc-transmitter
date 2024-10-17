@@ -19,7 +19,9 @@ BLECharacteristic *pCharacteristic2;
 void setup()
 {
     Serial.begin(115200);
-    BLEDevice::init("ESP32-C3 Transmitter");
+    BLEDevice::init("ESP32 Transmitter");
+
+    pinMode(2, OUTPUT);
 
     BLEServer *pServer = BLEDevice::createServer();
     BLEService *pService = pServer->createService(SERVICE_UUID);
@@ -39,7 +41,7 @@ void setup()
     pAdvertising->addServiceUUID(SERVICE_UUID);
     pAdvertising->start();
 
-    // Get the MAC address of the ESP32-C3
+    // Get the MAC address of the ESP32
     String macAddress = BLEDevice::getAddress().toString().c_str();
     Serial.print("ESP32 Transmitter MAC Address: ");
     Serial.println(macAddress);
@@ -47,11 +49,17 @@ void setup()
     Serial.println("Transmitter is ready.");
 }
 
+int potPinX = 36;
+int potPinY = 39;
+
+int ADC_Max = 4096;
+
 void loop()
 {
     // Simulate sending 8-bit unsigned integer data on both channels
-    uint8_t data1 = random(0, 256); // Random value between 0 and 255
-    uint8_t data2 = random(0, 256);
+    digitalWrite(2, HIGH);
+    uint8_t data1 = map(analogRead(potPinX), 0, ADC_Max, 0, 180);
+    uint8_t data2 = map(analogRead(potPinY), 0, ADC_Max, 0, 180);
 
     pCharacteristic1->setValue(&data1, 1);
     pCharacteristic1->notify();
@@ -59,6 +67,7 @@ void loop()
     pCharacteristic2->setValue(&data2, 1);
     pCharacteristic2->notify();
 
-    Serial.printf("Data sent - Channel 1: %d, Channel 2: %d\n", data1, data2);
-    delay(1000); // Adjust the delay as needed
+    // Serial.printf("Data sent - Channel 1: %d, Channel 2: %d\n", data1, data2);
+    digitalWrite(2, LOW);
+    delay(500); // Adjust the delay as needed
 }
