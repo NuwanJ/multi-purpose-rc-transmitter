@@ -16,13 +16,27 @@
 BLECharacteristic *pCharacteristic1;
 BLECharacteristic *pCharacteristic2;
 
+uint8_t data1, data2;
+uint8_t data1Old = 90, data2Old = 90;
+
+#define ADC_MAX 4096
+
+#define CORRECTION_Y 14
+#define CORRECTION_X 36
+
 void setup()
 {
+    delay(2000);
     Serial.begin(115200);
+    Serial.println("ESP32 Transmitter");
+
+    pinMode(PIN_LED_INBUILT, OUTPUT);
+
+    digitalWrite(PIN_LED_INBUILT, LOW);
+    delay(500);
+    digitalWrite(PIN_LED_INBUILT, HIGH);
+
     BLEDevice::init("ESP32 Transmitter");
-
-    pinMode(2, OUTPUT);
-
     BLEServer *pServer = BLEDevice::createServer();
     BLEService *pService = pServer->createService(SERVICE_UUID);
 
@@ -49,22 +63,18 @@ void setup()
     Serial.println("Transmitter is ready.");
 }
 
-int potPinX = 36;
-int potPinY = 39;
-
-uint8_t data1, data2;
-uint8_t data1Old = 90, data2Old = 90;
-
-int ADC_Max = 4096;
-
 void loop()
 {
-    digitalWrite(2, HIGH);
-    data1 = map(analogRead(potPinX), 0, ADC_Max, 0, 180);
-    data2 = map(analogRead(potPinY), 0, ADC_Max, 0, 180);
+    digitalWrite(PIN_LED_INBUILT, LOW);
+    data1 = 180 - (map(analogRead(PIN_POT_Y), 0, ADC_MAX, 0, 180) - CORRECTION_Y);
+    data1 = map(data1, -CORRECTION_Y, 180 - CORRECTION_Y, 0, 180);
+
+    data2 = 180 - (map(analogRead(PIN_POT_X), 0, ADC_MAX, 0, 180) - CORRECTION_X);
+    data2 = map(data2, -CORRECTION_X, 180 - CORRECTION_X, 0, 180);
 
     if (data1 != data1Old)
     {
+        Serial.printf("D: %d S:%d\n", data1, data2);
         pCharacteristic1->setValue(&data1, 1);
         pCharacteristic1->notify();
         data1Old = data1;
@@ -72,12 +82,12 @@ void loop()
 
     if (data2 != data2Old)
     {
+        Serial.printf("D: %d S:%d\n", data1, data2);
         pCharacteristic2->setValue(&data2, 1);
         pCharacteristic2->notify();
         data2Old = data2;
     }
 
-    delay(100);
-    digitalWrite(2, LOW);
-    delay(400);
+    digitalWrite(PIN_LED_INBUILT, HIGH);
+    // delay(400);
 }
