@@ -5,8 +5,8 @@
 
 #define PIN_LED_INBUILT 8
 
-#define PIN_POT_X 2
-#define PIN_POT_Y 3
+#define PIN_POT_X 3
+#define PIN_POT_Y 2
 
 // Analog Inputs --------
 #define PIN_A0 2

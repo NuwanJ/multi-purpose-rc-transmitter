@@ -21,8 +21,8 @@ uint8_t data1Old = 90, data2Old = 90;
 
 #define ADC_MAX 4096
 
-#define CORRECTION_Y 14
-#define CORRECTION_X 36
+#define CORRECTION_X 14
+#define CORRECTION_Y 35
 
 void setup()
 {
@@ -66,28 +66,28 @@ void setup()
 void loop()
 {
     digitalWrite(PIN_LED_INBUILT, LOW);
-    data1 = 180 - (map(analogRead(PIN_POT_Y), 0, ADC_MAX, 0, 180) - CORRECTION_Y);
-    data1 = map(data1, -CORRECTION_Y, 180 - CORRECTION_Y, 0, 180);
+    data1 = map(analogRead(PIN_POT_X), 0, ADC_MAX, 180, 0) + CORRECTION_X;
+    // data1 = map(data1, CORRECTION_X/2, 180 + CORRECTION_X/2, 0, 180);
 
-    data2 = 180 - (map(analogRead(PIN_POT_X), 0, ADC_MAX, 0, 180) - CORRECTION_X);
-    data2 = map(data2, -CORRECTION_X, 180 - CORRECTION_X, 0, 180);
+    data2 = map(analogRead(PIN_POT_Y), 0, ADC_MAX, 180, 0) + CORRECTION_Y;
+    // data2 = map(data2, CORRECTION_Y, 180 + CORRECTION_Y, 0, 180);
 
-    if (data1 != data1Old)
+    if (abs(data1 - data1Old) > 5)
     {
-        Serial.printf("D: %d S:%d\n", data1, data2);
+        Serial.printf("D:%03d S:%03d\n", data1, data2);
         pCharacteristic1->setValue(&data1, 1);
         pCharacteristic1->notify();
         data1Old = data1;
     }
 
-    if (data2 != data2Old)
+    if (abs(data2 - data2Old) > 5)
     {
-        Serial.printf("D: %d S:%d\n", data1, data2);
+        Serial.printf("D:%03d S:%03d\n", data1, data2);
         pCharacteristic2->setValue(&data2, 1);
         pCharacteristic2->notify();
         data2Old = data2;
     }
 
     digitalWrite(PIN_LED_INBUILT, HIGH);
-    // delay(400);
+    delay(50);
 }
