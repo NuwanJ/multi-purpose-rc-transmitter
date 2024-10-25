@@ -51,16 +51,20 @@ void setup()
     pCharacteristic2->addDescriptor(new BLE2902());
 
     pService->start();
+
+    // Start advertising
     BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
     pAdvertising->addServiceUUID(SERVICE_UUID);
+    pAdvertising->setScanResponse(true);
     pAdvertising->start();
+
+    BLEDevice::startAdvertising();
+    Serial.println("Transmitter is ready.");
 
     // Get the MAC address of the ESP32
     String macAddress = BLEDevice::getAddress().toString().c_str();
     Serial.print("ESP32 Transmitter MAC Address: ");
     Serial.println(macAddress);
-
-    Serial.println("Transmitter is ready.");
 }
 
 void loop()
@@ -72,12 +76,11 @@ void loop()
     data2 = map(analogRead(PIN_POT_Y), 0, ADC_MAX, 180, 0) + CORRECTION_Y;
     // data2 = map(data2, CORRECTION_Y, 180 + CORRECTION_Y, 0, 180);
 
-    if (abs(data1 - data1Old) > 5)
+    if (abs(data1 - 90) > 4)
     {
         Serial.printf("D:%03d S:%03d\n", data1, data2);
         pCharacteristic1->setValue(&data1, 1);
         pCharacteristic1->notify();
-        data1Old = data1;
     }
 
     if (abs(data2 - data2Old) > 5)
